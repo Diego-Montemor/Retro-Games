@@ -5,6 +5,8 @@
 1. `000_criar_banco.sql`: cria o banco `retrogames` com charset `utf8mb4` e seleciona esse banco na conexão atual.
 2. `001_criar_tabelas.sql`: cria as sete tabelas, suas chaves e índices no banco selecionado.
 3. `002_conferir_estrutura.sql`: consulta a estrutura criada para conferência.
+4. `003_inserir_dados_iniciais.sql`: insere condições, perfis, plataformas, gêneros, jogos e suas associações.
+5. `004_conferir_dados_iniciais.sql`: confere quantidades, chaves fixas e os casos de jogo inativo e estoque zero.
 
 Execute nessa ordem em um servidor **MySQL 8**. Os scripts de criação são destinados a uma instalação nova e acusam erro se o banco ou as tabelas já existirem. Se ocorrer um erro, interrompa a execução e confira o destino antes de continuar. Nenhum script apaga dados.
 
@@ -14,11 +16,21 @@ No terminal, entre na pasta `Retro-Games` antes de abrir o cliente `mysql`. Depo
 SOURCE database/000_criar_banco.sql;
 SOURCE database/001_criar_tabelas.sql;
 SOURCE database/002_conferir_estrutura.sql;
+SOURCE database/003_inserir_dados_iniciais.sql;
+SOURCE database/004_conferir_dados_iniciais.sql;
 ```
 
 O cliente deve ser iniciado a partir da pasta `Retro-Games`, pois `SOURCE` resolve os caminhos a partir dela. Execute cada comando somente se o anterior concluir sem erros. No DataGrip, siga os passos abaixo. Se executar os arquivos em conexões diferentes, selecione `retrogames` como schema de destino antes de executar 001 e 002.
 
-Os scripts criam somente a estrutura. Os códigos de condições, perfis e demais dados iniciais precisam ser definidos antes de um script de carga; nenhum usuário ou senha é cadastrado por SQL.
+### Carga inicial
+
+Após os scripts da etapa de estrutura, execute 003 e 004 no mesmo schema. A carga 003 deve ser executada uma única vez, com as tabelas vazias, e por inteiro na mesma conexão: `LAST_INSERT_ID()` captura as chaves geradas em variáveis de sessão para montar os relacionamentos. Não se presume que os IDs gerados comecem em 1 ou sejam consecutivos. As únicas chaves fixas são as condições (1 Novo, 2 Usado, 3 Recondicionado) e os perfis (1 Administrador, 2 Cliente).
+
+São inseridas 6 plataformas, 8 gêneros, 20 jogos e 34 associações, com 1 a 3 gêneros por jogo. Os jogos e consoles são reais; anos de lançamento correspondem à primeira edição na plataforma indicada, podendo variar por região. Preços, estoques e condições são fictícios para uso didático. `Shenmue` fica inativo e `The Legend of Zelda: Ocarina of Time` fica ativo com estoque zero. Datas de cadastro usam `UTC_TIMESTAMP()`.
+
+Nenhum usuário é inserido: `tb_usuario` permanece vazia até a criação do administrador pela API na aula de autenticação. Se houver erro durante a carga, interrompa e confira o que já foi inserido antes de repetir: os comandos não formam uma carga idempotente nem desfazem inserções anteriores automaticamente.
+
+O script 004 deve mostrar 3 condições, 2 perfis, 6 plataformas, 8 gêneros, 20 jogos, 34 associações e 0 usuários. Ele também lista a quantidade de gêneros por jogo e os casos especiais. No DataGrip, execute 003 e depois 004 após o passo 8 abaixo.
 
 O script `001_criar_tabelas.sql` implementa as sete tabelas das seções 4.1–4.3 do PDF, usando os tamanhos de campos da imagem `retrogames-modelo-relacional.png`. As tabelas de Compras da imagem pertencem à tarefa futura e não entram neste script.
 
@@ -57,7 +69,11 @@ Atualize os schemas no DataGrip e execute 001 e 002 novamente nesse destino. O s
 
 ## Estado da verificação
 
-Os arquivos foram conferidos contra o PDF, o diagrama e o checklist. Não foram executados em um servidor MySQL nesta tarefa; a listagem real de tabelas, a inspeção no DataGrip e o teste de recriação precisam ser confirmados após a execução.
+Os arquivos foram conferidos contra o PDF, o diagrama e o checklist. A consulta 002 foi executada no banco local `retrogames`, confirmando sete tabelas, cinco FKs e somente `ds_jogo` anulável. A inspeção visual no DataGrip e o teste de recriação não foram realizados nesta execução.
+
+Com autorização expressa do estudante para usar o servidor disponível, a carga 003 e as consultas 004 foram executadas sem erros no **MariaDB 11.8.8**, com o usuário `dev`. As tabelas estavam vazias antes da carga. Foram confirmadas 3 condições, 2 perfis, 6 plataformas, 8 gêneros, 20 jogos, 34 associações e 0 usuários. Todos os 20 jogos têm de 1 a 3 gêneros; `Shenmue` está inativo e `The Legend of Zelda: Ocarina of Time` tem estoque zero. A sessão usou `utf8mb4` para preservar os acentos. Nenhuma senha foi gravada nos arquivos.
+
+A arquitetura continua especificando **MySQL 8**; a execução no MariaDB não comprova validação nessa versão do MySQL. Os scripts 000 e 001 não foram reexecutados, pois o banco e as sete tabelas já existiam.
 
 Referências de operação do DataGrip:
 - https://www.jetbrains.com/help/datagrip/mysql.html

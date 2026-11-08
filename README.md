@@ -31,6 +31,8 @@ As bibliotecas e o projeto de testes começam vazios. Entidades, regras e testes
 
 Os scripts para MySQL 8 ficam em `database/`. Execute `000_criar_banco.sql`, `001_criar_tabelas.sql` e `002_conferir_estrutura.sql`, nessa ordem, para criar o banco `retrogames`, criar as sete tabelas e conferir a estrutura. Veja as instruções de conexão e execução em [database/README.md](database/README.md).
 
+Logo depois, execute `003_inserir_dados_iniciais.sql` e `004_conferir_dados_iniciais.sql` para carregar e conferir condições, perfis, 6 plataformas, 8 gêneros e 20 jogos. Usuários serão criados pela API na etapa de autenticação.
+
 ## Front-end
 
 Com Node.js 22 LTS instalado, execute em outro terminal:
