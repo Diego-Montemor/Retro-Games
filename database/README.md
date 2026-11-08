@@ -9,6 +9,7 @@
 5. `004_conferir_dados_iniciais.sql`: confere quantidades, chaves fixas e os casos de jogo inativo e estoque zero.
 6. `005_consultas_catalogo.sql`: exercícios de catálogo, gêneros, totais por plataforma e busca paginada.
 7. `006_testar_integridade.sql`: testes de FK, UNIQUE, NOT NULL e preço zero, desfeitos com `ROLLBACK`.
+8. `007_validar_sql_plataforma_repository.sql`: valida os sete comandos do Repository de plataformas; as gravações de teste são desfeitas com `ROLLBACK`.
 
 Execute nessa ordem em um servidor **MySQL 8**. Os scripts de criação são destinados a uma instalação nova e acusam erro se o banco ou as tabelas já existirem. Se ocorrer um erro, interrompa a execução e confira o destino antes de continuar. Nenhum script apaga dados.
 

@@ -34,3 +34,15 @@ dotnet build RetroGames.sln
 A solução compilou com zero erros e zero avisos. Uma aplicação temporária fora do repositório exercitou a base no MariaDB 11.8.8 autorizado pelo estudante, usando apenas uma tabela temporária. Foram confirmados: uma linha inserida, preservação de um parâmetro com aspas, conversão de `null` para SQL NULL, conversão de 1062 para `RegistroDuplicadoException` com `InnerException`, propagação do erro 1064 como `MySqlException` e fechamento da conexão. A tabela temporária desapareceu com o encerramento da sessão; os dados da aplicação não foram alterados. Essa validação não substitui a execução no MySQL 8 previsto na arquitetura.
 
 Referência: [API básica do MySqlConnector](https://mysqlconnector.net/tutorials/basic-api/).
+
+## Repository de plataformas — etapa 3
+
+`IPlataformaRepository` define sete métodos assíncronos implementados por `PlataformaRepository`: `ListarAsync`, `BuscarPorIdAsync`, `ExisteComNomeAsync`, `PossuiJogosAsync`, `InserirAsync`, `AlterarAsync` e `ExcluirAsync`.
+
+Cada comando acessa uma única tabela, sem JOIN ou subconsulta. `PossuiJogosAsync` lê somente `tb_jogo`; os outros leem ou gravam `tb_plataforma`. Os valores entram por `AdicionarParametro`, inclusive o ID opcional a ignorar. Os métodos de existência usam `SELECT 1 ... LIMIT 1`: uma linha indica verdadeiro, e nenhuma linha indica falso.
+
+`MapearPlataforma` centraliza a correspondência entre as quatro colunas e as propriedades. INSERT e UPDATE passam por `ExecutarGravacaoAsync`; o INSERT retorna `LastInsertedId` convertido para `int`. DELETE executa o comando diretamente. Não há conferência de regras de negócio, exceção de negócio ou transação no Repository. Conexões, comandos e leitores usam `await using`.
+
+Antes da implementação, os comandos do arquivo `database/007_validar_sql_plataforma_repository.sql` foram executados no MariaDB 11.8.8 autorizado, pelo cliente de terminal (sem Workbench). Todos produziram o resultado esperado e as gravações SQL foram desfeitas com ROLLBACK.
+
+Depois da implementação, uma aplicação temporária fora do repositório exercitou os sete métodos reais. Foram confirmados: ordenação, mapeamento completo, retorno nulo para ID inexistente, nome com e sem ID a ignorar, consultas com e sem jogos, parâmetros contendo aspas, ID gerado, atualização dos três campos, exclusão, conversão de duplicidade em INSERT e UPDATE pela base e propagação do erro de FK 1451. A plataforma de teste foi removida em `finally` e a listagem final confirmou as seis plataformas originais. O build da solução terminou com zero erros e zero avisos. A execução no Workbench e no MySQL 8 não foi realizada.
