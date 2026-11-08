@@ -54,6 +54,21 @@ Somente `ds_jogo` aceita NULL. Chaves `co_seq_` são geradas; condições e perf
 
 ## Conectar e criar pelo DataGrip
 
+### Dados conferidos na etapa de conexão
+
+A consulta abaixo foi executada diretamente no banco local (pelo cliente de terminal, sem usar o Workbench):
+
+```sql
+SELECT @@hostname AS servidor, @@port AS porta,
+       CURRENT_USER() AS usuario, DATABASE() AS banco;
+```
+
+Resultado observado: servidor `VM`, porta `3306`, usuário `dev@localhost`, banco `retrogames`. A connection string usa `localhost` por ser uma conexão local, `3306`, usuário `dev` (sem a parte `@localhost`) e banco `retrogames`.
+
+Nesta etapa, a orientação do estudante atualizou a configuração de user-secrets para `.env` na raiz do repositório. Esse arquivo é ignorado pelo Git e contém `ConnectionStrings__Default`. O `.env.example` versionado contém o marcador `SUA_SENHA`; substitua-o apenas no `.env` local. A leitura pela API ficará para a aula 4: nenhum carregador de `.env` foi instalado ou configurado agora.
+
+### Passos no DataGrip
+
 O DataGrip é um cliente: é necessário ter um servidor **MySQL 8** instalado, em execução e acessível. Ter o comando `mysql` instalado não comprova que exista um servidor ativo.
 
 1. Abra o DataGrip e escolha **File → New → Data Source → MySQL**.

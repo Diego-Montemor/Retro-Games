@@ -1,6 +1,6 @@
 # Base do Repository
 
-`RepositoryConfig.StringConexao` guarda somente o texto de conexão. Seu valor será fornecido pela aplicação na etapa de configuração, via user-secrets; nenhuma credencial fica neste projeto.
+`RepositoryConfig.StringConexao` guarda somente o texto de conexão. Conforme a etapa 2 da aula, o valor fica no `.env` local, ignorado pelo Git. Na aula 4, a API lerá esse arquivo e fornecerá a configuração; nesta etapa nada lê o `.env`. O arquivo versionado `.env.example` contém apenas o modelo sem senha real.
 
 `RepositoryBase` oferece quatro métodos protegidos para os repositórios que herdarão dela:
 
