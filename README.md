@@ -25,7 +25,11 @@ dotnet run --project RetroGames.WebApi
 
 A API usa `http://localhost:5080`. Controllers estão habilitados, mas ainda não há endpoints de negócio. O documento OpenAPI fica em `/openapi/v1.json` somente em desenvolvimento.
 
-As bibliotecas e o projeto de testes começam vazios. Entidades, regras, banco e testes serão acrescentados nas etapas seguintes.
+As bibliotecas e o projeto de testes começam vazios. Entidades, regras e testes serão acrescentados nas etapas seguintes.
+
+## Banco de dados
+
+Os scripts para MySQL 8 ficam em `database/`. Execute `000_criar_banco.sql`, `001_criar_tabelas.sql` e `002_conferir_estrutura.sql`, nessa ordem, para criar o banco `retrogames`, criar as sete tabelas e conferir a estrutura. Veja as instruções de conexão e execução em [database/README.md](database/README.md).
 
 ## Front-end
 
