@@ -11,6 +11,7 @@
 7. `006_testar_integridade.sql`: testes de FK, UNIQUE, NOT NULL e preço zero, desfeitos com `ROLLBACK`.
 8. `007_validar_sql_plataforma_repository.sql`: valida os sete comandos do Repository de plataformas; as gravações de teste são desfeitas com `ROLLBACK`.
 9. `008_validar_sql_jogos_repositories.sql`: valida listagem, filtros, contagem, segunda página e gravações de jogos e vínculos; as gravações de teste são desfeitas com `ROLLBACK`.
+10. `009_validar_sql_generos_condicoes.sql`: valida a leitura dos gêneros ordenados por nome e das condições de jogo; contém somente consultas.
 
 Execute nessa ordem em um servidor **MySQL 8**. Os scripts de criação são destinados a uma instalação nova e acusam erro se o banco ou as tabelas já existirem. Se ocorrer um erro, interrompa a execução e confira o destino antes de continuar. Nenhum script apaga dados.
 
