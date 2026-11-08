@@ -7,6 +7,8 @@
 3. `002_conferir_estrutura.sql`: consulta a estrutura criada para conferência.
 4. `003_inserir_dados_iniciais.sql`: insere condições, perfis, plataformas, gêneros, jogos e suas associações.
 5. `004_conferir_dados_iniciais.sql`: confere quantidades, chaves fixas e os casos de jogo inativo e estoque zero.
+6. `005_consultas_catalogo.sql`: exercícios de catálogo, gêneros, totais por plataforma e busca paginada.
+7. `006_testar_integridade.sql`: testes de FK, UNIQUE, NOT NULL e preço zero, desfeitos com `ROLLBACK`.
 
 Execute nessa ordem em um servidor **MySQL 8**. Os scripts de criação são destinados a uma instalação nova e acusam erro se o banco ou as tabelas já existirem. Se ocorrer um erro, interrompa a execução e confira o destino antes de continuar. Nenhum script apaga dados.
 
@@ -31,6 +33,16 @@ São inseridas 6 plataformas, 8 gêneros, 20 jogos e 34 associações, com 1 a 3
 Nenhum usuário é inserido: `tb_usuario` permanece vazia até a criação do administrador pela API na aula de autenticação. Se houver erro durante a carga, interrompa e confira o que já foi inserido antes de repetir: os comandos não formam uma carga idempotente nem desfazem inserções anteriores automaticamente.
 
 O script 004 deve mostrar 3 condições, 2 perfis, 6 plataformas, 8 gêneros, 20 jogos, 34 associações e 0 usuários. Ele também lista a quantidade de gêneros por jogo e os casos especiais. No DataGrip, execute 003 e depois 004 após o passo 8 abaixo.
+
+### Consultas e testes de integridade
+
+Depois da carga, execute `SOURCE database/005_consultas_catalogo.sql;` no cliente conectado ao schema `retrogames`. No arquivo, altere `@codigo_jogo`, `@codigo_genero`, `@trecho_nome` e `@pagina` para consultar outros valores. Somente o catálogo filtra jogos ativos; as outras consultas incluem inativos. A ordenação da busca usa nome e código para manter as páginas estáveis. `%` e `_` no trecho de busca têm o significado de curingas do `LIKE`.
+
+Os `JOINs` do arquivo 005 pertencem aos exercícios SQL diretos no banco. No código do Repository continua valendo uma tabela por consulta e composição com LINQ no Service.
+
+Para executar `006_testar_integridade.sql`, abra o cliente `mysql` ou `mariadb` com a opção `--force` e depois use `SOURCE database/006_testar_integridade.sql;`. A opção permite continuar após os quatro erros intencionais e alcançar o `ROLLBACK`. No DataGrip, execute cada teste na mesma conexão e finalize com `ROLLBACK`. Não execute o arquivo como migração automática. A transação existe apenas para desfazer os dados de teste; os contadores `AUTO_INCREMENT` podem avançar.
+
+Os cinco testes foram executados no MariaDB 11.8.8 autorizado e produziram os resultados esperados: erros 1452, 1062, 1451 e 1048, e aceitação de preço zero. O resultado de cada teste está comentado junto ao comando no arquivo 006. O preço zero confirma que RN06 deve ficar no Service. O `ROLLBACK` foi confirmado, mantendo 20 jogos e 6 plataformas. As consultas 005 também foram executadas, incluindo conferência da segunda página e de uma plataforma sem jogos inserida temporariamente e desfeita com `ROLLBACK`.
 
 O script `001_criar_tabelas.sql` implementa as sete tabelas das seções 4.1–4.3 do PDF, usando os tamanhos de campos da imagem `retrogames-modelo-relacional.png`. As tabelas de Compras da imagem pertencem à tarefa futura e não entram neste script.
 
