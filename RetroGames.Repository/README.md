@@ -46,3 +46,26 @@ Cada comando acessa uma única tabela, sem JOIN ou subconsulta. `PossuiJogosAsyn
 Antes da implementação, os comandos do arquivo `database/007_validar_sql_plataforma_repository.sql` foram executados no MariaDB 11.8.8 autorizado, pelo cliente de terminal (sem Workbench). Todos produziram o resultado esperado e as gravações SQL foram desfeitas com ROLLBACK.
 
 Depois da implementação, uma aplicação temporária fora do repositório exercitou os sete métodos reais. Foram confirmados: ordenação, mapeamento completo, retorno nulo para ID inexistente, nome com e sem ID a ignorar, consultas com e sem jogos, parâmetros contendo aspas, ID gerado, atualização dos três campos, exclusão, conversão de duplicidade em INSERT e UPDATE pela base e propagação do erro de FK 1451. A plataforma de teste foi removida em `finally` e a listagem final confirmou as seis plataformas originais. O build da solução terminou com zero erros e zero avisos. A execução no Workbench e no MySQL 8 não foi realizada.
+
+## Repositories de jogos — etapa 4
+
+`IJogoRepository` e `JogoRepository` oferecem `ListarAsync`, `BuscarPorIdAsync`, `InserirAsync`, `AlterarAsync` e `DesativarAsync`. `IJogoGeneroRepository` e `JogoGeneroRepository` oferecem `ListarTodosAsync`, `ListarPorJogosAsync`, `InserirAsync` e `RemoverPorJogoAsync`.
+
+`ListarAsync` devolve uma tupla `(Jogos, Total)`. O padrão é página 1 com cinco itens e somente jogos ativos. A listagem usa nome e código como ordenação estável. `COUNT(*)` e a consulta com `LIMIT`/`OFFSET` são executados no SQL com exatamente o mesmo filtro e os mesmos parâmetros. `Total` é a quantidade encontrada antes da paginação, inclusive quando a página pedida está vazia.
+
+Exemplo de chamada para as próximas etapas:
+
+```csharp
+var (jogos, total) = await repositorio.ListarAsync(
+    pagina: 2, tamanhoPagina: 5, busca: "Mario", idPlataforma: 1);
+```
+
+A busca nula, vazia ou só com espaços não aplica filtro por nome; `%` e `_` têm o significado de curingas do LIKE. Plataforma nula não aplica filtro. `ids: null` não restringe os códigos, enquanto uma coleção vazia retorna zero jogos. Isso permite ao futuro Service enviar os IDs obtidos pelo filtro de gênero sem perder a contagem e a paginação no banco. Os nomes de parâmetros do IN são gerados por índice (`@id_0`, `@id_1` etc.); os valores sempre são adicionados por `AdicionarParametro`, sem concatenação no SQL. A validação de página, tamanho e permissões ficará nas camadas apropriadas da API.
+
+O jogo é mapeado pelas dez colunas, incluindo `ds_jogo` anulável. A inserção usa a data recebida no modelo; a alteração preserva `dt_cadastro` e atualiza os demais dados. `DesativarAsync` somente atualiza `st_ativo`, mantendo registro e vínculos. Não existe DELETE de jogo.
+
+Os vínculos de vários jogos são lidos em um único SELECT com IN. Coleção de jogos vazia retorna uma lista vazia. A inserção de gêneros usa um único INSERT com múltiplas linhas; coleção de gêneros vazia não gera comando. `RemoverPorJogoAsync` remove apenas os vínculos do ID informado, para posterior regravação. As duplicidades passam pelo tratamento da base. Cada consulta acessa uma tabela, sem JOIN ou subconsulta, e nenhum dos dois repositórios abre transações ou combina entidades. A transação de salvar jogo e gêneros caberá ao Service.
+
+Antes da implementação, foi executado `database/008_validar_sql_jogos_repositories.sql` no MariaDB 11.8.8 autorizado, pelo cliente de terminal, sem Workbench. Foram conferidos: listagem sem filtro, cada filtro isolado, filtros combinados, inativos, IDs vazios, nome inexistente, segunda página e página além do fim; também busca por ID, inserção, alteração, desativação e todos os comandos dos vínculos. As gravações foram desfeitas com ROLLBACK.
+
+Depois da implementação, uma aplicação temporária fora do repositório validou os nove métodos reais, inclusive o mapeamento das dez colunas, parâmetros com aspas, descrição NULL, preservação da data de cadastro, duplicidade de vínculo convertida pela base, remoção e regravação de gêneros e desativação preservando os relacionamentos. O programa de teste usou TransactionScope fora dos repositórios, sem Complete, e confirmou o desfazimento das gravações: 20 jogos, 34 vínculos e nenhum registro de teste. A solução compilou com zero erros e zero avisos. Não foi realizada execução no Workbench nem no MySQL 8.
